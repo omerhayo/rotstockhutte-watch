@@ -51,7 +51,7 @@ TARGET_DATES = [
 ]
 
 # Only alert when at least this many beds are free.
-MIN_BEDS = 2
+MIN_BEDS = 1
 
 # Minutes between checks. Please keep this at 10 or above.
 CHECK_EVERY_MIN = 15
