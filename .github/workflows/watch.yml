@@ -1,0 +1,51 @@
+name: Hut watch
+
+on:
+  schedule:
+    # Every 15 minutes. GitHub's minimum is 5, but scheduled runs on the free
+    # tier are best-effort and often drift by a few minutes under load.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:        # lets you trigger a run by hand from the Actions tab
+
+permissions:
+  contents: write           # needed to commit state.json back to the repo
+
+concurrency:
+  group: hut-watch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Check availability
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: python hut_watch.py --once
+
+      - name: Remember what we already alerted about
+        run: |
+          if [ -n "$(git status --porcelain state.json)" ]; then
+            git config user.name "hut-watch-bot"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state.json
+            git commit -m "state: record alerted dates"
+            git push
+          else
+            echo "no state change"
+          fi
