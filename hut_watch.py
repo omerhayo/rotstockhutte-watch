@@ -47,7 +47,7 @@ HUT_NAME = "Rotstockhütte"
 
 # The night(s) you want, as arrival dates. Format YYYY-MM-DD.
 TARGET_DATES = [
-    "2026-09-18"
+    "2026-09-19"
 ]
 
 # Only alert when at least this many beds are free.
